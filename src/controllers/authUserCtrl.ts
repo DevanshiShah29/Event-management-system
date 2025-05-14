@@ -133,7 +133,7 @@ export const loginUser = async (req: Request, res: Response) => {
         _id: findUser._id,
         name: findUser.name,
         email: findUser.email,
-        role: "user",
+        role: findUser.role || "user",
       };
 
       const token = jwt.sign(tokenUser, process.env.TOKEN_SECRET!, {
@@ -244,6 +244,17 @@ export const logoutUser = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllUsers = async (req: Request, res: Response) => {
+  try {
+    const rcResponse = new ApiResponse();
+    const users = await User.find();
+    rcResponse.data = users;
+    return res.status(rcResponse.status).send(rcResponse);
+  } catch (error) {
+    return throwError(res);
+  }
+};
+
 export const userDetails = async (req: Request, res: Response) => {
   try {
     const rcResponse = new ApiResponse();
@@ -251,7 +262,7 @@ export const userDetails = async (req: Request, res: Response) => {
 
     const pipeline: any[] = [
       { $match: { _id: new Types.ObjectId(userId) } },
-      { $project: { _id: 1, name: 1, email: 1, profileimage: 1, address: 1, country: 1, state: 1, city: 1, zipcode: 1 } },
+      { $project: { _id: 1, name: 1, email: 1, profileimage: 1, address: 1, country: 1, state: 1, city: 1, zipcode: 1, latitude: 1, longitude: 1 } },
     ];
 
     rcResponse.data = await User.aggregate(pipeline);
